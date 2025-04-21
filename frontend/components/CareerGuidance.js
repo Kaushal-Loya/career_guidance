@@ -3,59 +3,32 @@
 import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Mic, Globe, Search, MessageSquare } from "lucide-react";
+import { Mic, Search, MessageSquare } from "lucide-react";
 import "./CareerGuidance.css";
+import GoogleTranslate from "./GoogleTranslate";
 
 const CareerGuidance = () => {
     const [query, setQuery] = useState("");
     const [response, setResponse] = useState("");
-    const [translatedResponse, setTranslatedResponse] = useState("");
     const [loading, setLoading] = useState(false);
-    const [translating, setTranslating] = useState(false);
-    const [selectedLanguage, setSelectedLanguage] = useState("en");
-    const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const [isListening, setIsListening] = useState(false);
-    const [theme, setTheme] = useState(typeof localStorage !== 'undefined' ? localStorage.getItem("theme") || "light" : "light");
+    const [theme, setTheme] = useState("light"); // Start with light theme for SSR
 
-    // Language options with labels and codes
-    const languages = [
-        { code: "en", name: "English" },
-        { code: "es", name: "Spanish (Español)" },
-        { code: "hi", name: "Hindi (हिन्दी)" },
-        { code: "fr", name: "French (Français)" },
-        { code: "de", name: "German (Deutsch)" },
-        { code: "zh-cn", name: "Chinese (简体中文)" },
-        { code: "ar", name: "Arabic (العربية)" },
-        { code: "ta", name: "Tamil (தமிழ்)" },
-        { code: "bn", name: "Bengali (বাংলা)" },
-        { code: "ru", name: "Russian (Русский)" },
-        { code: "ja", name: "Japanese (日本語)" },
-        { code: "ko", name: "Korean (한국어)" }
-    ];
+    // Initialize theme from localStorage after mount
+    useEffect(() => {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+            setTheme(savedTheme);
+        }
+    }, []);
 
-    // Apply theme on load and when changed
+    // Apply theme when it changes
     useEffect(() => {
         if (typeof window !== 'undefined') {
             document.body.className = theme;
             localStorage.setItem("theme", theme);
         }
     }, [theme]);
-
-    // Close language dropdown when clicking outside
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const handleClickOutside = (event) => {
-                if (showLanguageDropdown && !event.target.closest('.translate-icon-container')) {
-                    setShowLanguageDropdown(false);
-                }
-            };
-
-            document.addEventListener('mousedown', handleClickOutside);
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-            };
-        }
-    }, [showLanguageDropdown]);
 
     const handleQueryWithText = async (inputText) => {
         if (!inputText.trim()) return;
@@ -76,12 +49,6 @@ const CareerGuidance = () => {
             } else {
                 setResponse(data.response || "No response.");
             }
-            setTranslatedResponse("");
-
-            // If a non-English language is selected, translate the response
-            if (selectedLanguage !== "en") {
-                translateText(data.response || "No response.", selectedLanguage);
-            }
         } catch (err) {
             setResponse("Error connecting to backend.");
         }
@@ -90,35 +57,6 @@ const CareerGuidance = () => {
 
     const handleQuery = () => {
         handleQueryWithText(query);
-    };
-
-    const translateText = async (text, language) => {
-        if (language === "en") {
-            setTranslatedResponse("");
-            return;
-        }
-        setTranslating(true);
-        try {
-            const res = await fetch("http://localhost:8000/translate", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ text, language }),
-            });
-
-            const data = await res.json();
-            setTranslatedResponse(data.translated_text);
-        } catch (err) {
-            setTranslatedResponse("Translation failed.");
-        }
-        setTranslating(false);
-    };
-
-    const handleLanguageChange = (language) => {
-        setSelectedLanguage(language);
-        translateText(response, language);
-        setShowLanguageDropdown(false);
     };
 
     const handleVoiceInput = () => {
@@ -156,18 +94,15 @@ const CareerGuidance = () => {
         }
     };
 
-    // Get language name from code
-    const getLanguageName = (code) => {
-        const language = languages.find(lang => lang.code === code);
-        return language ? language.name : "English";
-    };
-
     return (
         <div className="career-guidance-container">
             {/* Header */}
             <div className="career-guidance-header">
-                <div className="theme-toggle" onClick={toggleTheme}>
-                    <span>{theme === "light" ? "🌙" : "☀️"}</span>
+                <div className="header-controls">
+                    <div className="theme-toggle" onClick={toggleTheme}>
+                        <span>{theme === "light" ? "🌙" : "☀️"}</span>
+                    </div>
+                    <GoogleTranslate />
                 </div>
                 <h1>JobGenie - Career Guidance</h1>
                 <p className="subtitle">Get personalized career advice, skill development recommendations, and industry insights.</p>
@@ -190,13 +125,6 @@ const CareerGuidance = () => {
                         </div>
                         <h3>Skill Development</h3>
                         <p>Learn which skills to develop based on your career goals and industry trends</p>
-                    </div>
-                    <div className="feature-card">
-                        <div className="feature-icon">
-                            <Globe size={24} />
-                        </div>
-                        <h3>Industry Insights</h3>
-                        <p>Stay up-to-date with the latest trends and opportunities in your field</p>
                     </div>
                 </div>
 
@@ -238,40 +166,12 @@ const CareerGuidance = () => {
                         <div className="response-container">
                             <div className="response-header">
                                 <h3 className="response-title">Response:</h3>
-
-                                <div className="translate-icon-container">
-                                    <div
-                                        className="translate-icon"
-                                        onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                                        title={`Translate (Current: ${getLanguageName(selectedLanguage)})`}
-                                    >
-                                        <Globe size={18} />
-                                    </div>
-                                    {showLanguageDropdown && (
-                                        <div className="language-dropdown">
-                                            {languages.map((lang) => (
-                                                <button
-                                                    key={lang.code}
-                                                    onClick={() => handleLanguageChange(lang.code)}
-                                                    className={selectedLanguage === lang.code ? "active" : ""}
-                                                >
-                                                    {lang.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
                             </div>
-
-                            {translating ? (
-                                <div className="loading-animation">Translating...</div>
-                            ) : (
-                                <div className="response-content">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {translatedResponse || response}
-                                    </ReactMarkdown>
-                                </div>
-                            )}
+                            <div className="response-content">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {response}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                     )}
                 </div>
