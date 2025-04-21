@@ -12,7 +12,7 @@ const CareerGuidance = () => {
     const [response, setResponse] = useState("");
     const [loading, setLoading] = useState(false);
     const [isListening, setIsListening] = useState(false);
-    const [theme, setTheme] = useState("light"); // Start with light theme for SSR
+    const [theme, setTheme] = useState("light");
 
     // Initialize theme from localStorage after mount
     useEffect(() => {
