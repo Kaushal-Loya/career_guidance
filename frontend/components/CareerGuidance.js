@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { Mic, Search, MessageSquare } from "lucide-react";
 import "./CareerGuidance.css";
 import GoogleTranslate from "./GoogleTranslate";
+import CareerChatbot from './CareerChatbot'; // Import the CareerChatbot component
 
 const CareerGuidance = () => {
     const [query, setQuery] = useState("");
@@ -181,6 +182,9 @@ const CareerGuidance = () => {
                     <div className="user-icon">👥</div>
                     <p>Trusted by 500K+ job seekers worldwide</p>
                 </div>
+                
+                {/* Add the CareerChatbot component */}
+                <CareerChatbot />
             </div>
         </div>
     );

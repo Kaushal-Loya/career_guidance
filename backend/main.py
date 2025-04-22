@@ -1,77 +1,122 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from googletrans import Translator
-import google.generativeai as genai
-import os
+from fastapi import FastAPI, Request 
+from fastapi.middleware.cors import CORSMiddleware 
+from googletrans import Translator 
+import google.generativeai as genai 
+import os  
 
-app = FastAPI()
+app = FastAPI()  
 
-# Allow CORS for local frontend dev
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # frontend URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Allow CORS for local frontend dev 
+app.add_middleware(     
+    CORSMiddleware,     
+    allow_origins=["http://localhost:3000"],  # frontend URL     
+    allow_credentials=True,     
+    allow_methods=["*"],     
+    allow_headers=["*"], 
+)  
 
-# Set your Gemini API key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyCqBgF8MwBFu_z12AzVodwdHlc8CO1XmZc"  # Replace with your Gemini API key
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+# Set your Gemini API key 
+os.environ["GOOGLE_API_KEY"] = "AIzaSyCqBgF8MwBFu_z12AzVodwdHlc8CO1XmZc"  # Replace with your Gemini API key 
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])  
 
-# Load Gemini model
-model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")
+# Load Gemini model 
+model = genai.GenerativeModel("gemini-2.5-pro-exp-03-25")  
 
-# System-level prompt to constrain the model to career-related queries
-SYSTEM_PROMPT = ('You are a highly skilled career guidance assistant. You only answer questions related to career advice, professional development, skills acquisition, job opportunities, or education. If a user asks about mathematics, logic puzzles, or any unrelated topics, you should politely explain that your expertise is focused on career guidance and hence the query is invalid and ask them to ask questions based on such. Also, suggest some actual courses and course-links related to the query, if it is valid.')
+# System-level prompt to constrain the model to career-related queries 
+SYSTEM_PROMPT = ('You are a highly skilled career guidance assistant. You only answer questions related to career advice, professional development, skills acquisition, job opportunities, or education. If a user asks about mathematics, logic puzzles, or any unrelated topics, you should politely explain that your expertise is focused on career guidance and hence the query is invalid and ask them to ask questions based on such. Also, suggest some actual courses and course-links related to the query, if it is valid.')  
 
-# Translation function
-def translate_text(text, target_language="en"):
-    translator = Translator()
-    translation = translator.translate(text, dest=target_language)
-    return translation.text
+# System prompt for the career chatbot
+CHATBOT_SYSTEM_PROMPT = "You are a career coach assistant. Only provide advice and information related to career development, job searching, resume writing, interview preparation, professional skills development, and workplace challenges. If asked about topics unrelated to careers or professional growth, politely redirect the conversation back to career topics."
 
-# Language Detection function
-def detect_language(text):
-    translator = Translator()
-    lang = translator.detect(text)
-    return lang.lang
+# Translation function 
+def translate_text(text, target_language="en"):     
+    translator = Translator()     
+    translation = translator.translate(text, dest=target_language)     
+    return translation.text  
 
-@app.post("/career-guidance")
-async def career_guidance(request: Request):
-    body = await request.json()
-    user_query = body.get("query", "")
+# Language Detection function 
+def detect_language(text):     
+    translator = Translator()     
+    lang = translator.detect(text)     
+    return lang.lang  
 
-    if not user_query:
-        return {"error": "No query provided"}
+@app.post("/career-guidance") 
+async def career_guidance(request: Request):     
+    body = await request.json()     
+    user_query = body.get("query", "")      
+    
+    if not user_query:         
+        return {"error": "No query provided"}      
+    
+    try:         
+        # Step 1: Detect the language of the input         
+        detected_language = detect_language(user_query)          
+        
+        # Step 2: Translate the user query to English if it's not in English         
+        translated_query = user_query if detected_language == "en" else translate_text(user_query, target_language="en")          
+        
+        # Add the system-level prompt to every query to enforce career-related behavior         
+        prompt_with_system = SYSTEM_PROMPT + "\n" + translated_query          
+        
+        # Step 3: Get response from Gemini         
+        response = model.generate_content(prompt_with_system)          
+        
+        # Extract the text content from the response         
+        response_text = response.parts[0].text if hasattr(response, "parts") and response.parts else "No response"          
+        
+        # Step 4: Return the response in the original language if it was not English         
+        final_response = response_text if detected_language == "en" else translate_text(response_text, target_language=detected_language)          
+        
+        return {"response": final_response, "language": detected_language}     
+    except Exception as e:         
+        return {"error": str(e)}  
 
+@app.post("/translate") 
+async def translate(request: Request):     
+    body = await request.json()     
+    text = body.get("text", "")     
+    target_language = body.get("language", "en")     
+    translated_text = translate_text(text, target_language)     
+    return {"translated_text": translated_text}
+
+@app.post("/career-chatbot")
+async def career_chatbot(request: Request):
     try:
-        # Step 1: Detect the language of the input
-        detected_language = detect_language(user_query)
-
-        # Step 2: Translate the user query to English if it's not in English
-        translated_query = user_query if detected_language == "en" else translate_text(user_query, target_language="en")
-
-        # Add the system-level prompt to every query to enforce career-related behavior
-        prompt_with_system = SYSTEM_PROMPT + "\n" + translated_query
-
-        # Step 3: Get response from Gemini
-        response = model.generate_content(prompt_with_system)
-
+        body = await request.json()
+        message = body.get("message", "")
+        history = body.get("history", [])
+        
+        if not message:
+            return {"error": "No message provided"}
+        
+        # Detect the language of the input
+        detected_language = detect_language(message)
+        
+        # Translate the user message to English if it's not in English
+        translated_message = message if detected_language == "en" else translate_text(message, target_language="en")
+        
+        # Format conversation with system prompt and the current message
+        content = f"{CHATBOT_SYSTEM_PROMPT}\n\nChat history for context (DO NOT repeat this):\n"
+        
+        # Add formatted history
+        for msg in history:
+            role = msg.get("role", "")
+            msg_content = msg.get("content", "")
+            content += f"\n{role.upper()}: {msg_content}"
+        
+        # Add the current message and instruction
+        content += f"\n\nUSER: {translated_message}\n\nPlease respond to the user's last message."
+        
+        # Generate content with the entire conversation as context
+        response = model.generate_content(content)
+        
         # Extract the text content from the response
-        response_text = response.parts[0].text if hasattr(response, "parts") and response.parts else "No response"
-
-        # Step 4: Return the response in the original language if it was not English
+        response_text = response.text if hasattr(response, "text") else response.parts[0].text if hasattr(response, "parts") and response.parts else "No response"
+        
+        # Translate the response back to the original language if needed
         final_response = response_text if detected_language == "en" else translate_text(response_text, target_language=detected_language)
-
+        
         return {"response": final_response, "language": detected_language}
     except Exception as e:
-        return {"error": str(e)}
-
-@app.post("/translate")
-async def translate(request: Request):
-    body = await request.json()
-    text = body.get("text", "")
-    target_language = body.get("language", "en")
-    translated_text = translate_text(text, target_language)
-    return {"translated_text": translated_text}
+        print(f"Error in career-chatbot endpoint: {str(e)}")  # Log the error
+        return {"response": f"I'm having trouble processing your request. Error: {str(e)}", "error": str(e)}
