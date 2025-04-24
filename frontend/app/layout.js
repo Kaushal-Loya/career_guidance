@@ -1,4 +1,6 @@
+// layout.js (No 'use client' here)
 import '../styles/globals.css'
+import CareerChatbotWrapper from '../components/CareerChatbotWrapper';
 
 export const metadata = {
     title: 'JobGenie - Career Guidance',
@@ -18,6 +20,7 @@ export default function RootLayout({ children }) {
         <html lang="en">
             <body>
                 {children}
+                <CareerChatbotWrapper />
             </body>
         </html>
     )

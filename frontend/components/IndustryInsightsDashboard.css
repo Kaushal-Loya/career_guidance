@@ -1,0 +1,339 @@
+.industry-insights-dashboard {
+    background-color: var(--bg-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .insights-header {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .insights-header h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+  
+  .insights-header p {
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+  
+  .insights-controls {
+    margin-bottom: 32px;
+  }
+  
+  .industry-selector {
+    margin-bottom: 16px;
+  }
+  
+  .industry-selector label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+  
+  .industry-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .industry-button {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-color);
+  }
+  
+  .industry-button:hover {
+    background-color: var(--primary-color-light);
+    border-color: var(--primary-color);
+  }
+  
+  .industry-button.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .insight-type-selector label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-color);
+  }
+  
+  .insight-type-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .insight-type-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-color);
+  }
+  
+  .insight-type-button:hover {
+    background-color: var(--primary-color-light);
+    border-color: var(--primary-color);
+  }
+  
+  .insight-type-button.selected {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+  
+  .insights-visualization {
+    margin-bottom: 32px;
+  }
+  
+  .insights-visualization h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+    text-align: center;
+  }
+  
+  .chart-container {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  
+  .custom-tooltip {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .tooltip-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+  
+  .tooltip-value {
+    color: var(--text-color);
+    margin-bottom: 4px;
+  }
+  
+  .tooltip-growth {
+    color: var(--success-color);
+    font-weight: 600;
+  }
+  
+  .tooltip-current, .tooltip-future {
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+  
+  .insights-summary h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+  }
+  
+  .summary-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid var(--primary-color);
+  }
+  
+  .summary-card h4 {
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+  
+  .insight-value {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-color);
+  }
+  
+  .insight-detail {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .industry-buttons,
+    .insight-type-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
+    
+    .industry-button,
+    .insight-type-button {
+      width: 100%;
+      text-align: center;
+      justify-content: center;
+    }
+    
+    .summary-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Additional styles for dark mode compatibility */
+  .dark .chart-container {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .dark .custom-tooltip {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+  .industry-insights-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+  
+  .insights-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  
+  .insights-header h2 {
+    font-size: 32px;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }
+  
+  .insights-header p {
+    font-size: 16px;
+    color: #64748b;
+  }
+  
+  .insights-controls {
+    margin-bottom: 32px;
+  }
+  
+  .industry-selector {
+    margin-bottom: 24px;
+  }
+  
+  .industry-selector label,
+  .insight-type-selector label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 12px;
+  }
+  
+  .industry-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .industry-button {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .industry-button.selected {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+    color: white;
+  }
+  
+  .industry-button:hover:not(.selected) {
+    background-color: #e2e8f0;
+  }
+  
+  .insight-type-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .insight-type-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .insight-type-button.selected {
+    background-color: #f8fafc;
+    border-color: #4f46e5;
+    color: #4f46e5;
+    box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.2);
+  }
+  
+  .insight-type-button:hover:not(.selected) {
+    background-color: #f1f5f9;
+  }
+  
+  .insights-visualization {
+    margin-bottom: 40px;
+  }
+  
+  .insights-visualization h3 {
+    font-size: 20px;
+    color: #1e293b;
+    margin-bottom: 16px;
+  }
+  
+  .chart-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+  }
+  

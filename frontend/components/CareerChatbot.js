@@ -1,23 +1,41 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from "react";
-import { Send, XCircle, CornerDownLeft, User, Bot } from "lucide-react";
+import { Send, XCircle, CornerDownLeft, User, Bot, MessageSquare } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 const CareerChatbot = () => {
-    const [messages, setMessages] = useState([
-        { role: 'bot', content: "Hello! I'm your Career Coach AI. I can help with career advice, professional development, resume tips, and job search strategies. What would you like assistance with today?" }
-    ]);
+    const [isClient, setIsClient] = useState(false);
+    const [messages, setMessages] = useState([{
+        role: 'bot',
+        content: "Hello! I'm your Career Coach AI. I can help with career advice, professional development, resume tips, and job search strategies. What would you like assistance with today?"
+    }]);
     const [input, setInput] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
 
+    // Handle client-side initialization
+    useEffect(() => {
+        setIsClient(true);
+        const savedMessages = localStorage.getItem('chatMessages');
+        if (savedMessages) {
+            setMessages(JSON.parse(savedMessages));
+        }
+    }, []);
+
     // Auto-scroll to the bottom when new messages appear
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Save messages to localStorage whenever they change
+    useEffect(() => {
+        if (isClient) {
+            localStorage.setItem('chatMessages', JSON.stringify(messages));
+        }
+    }, [messages, isClient]);
 
     // Focus input when chat opens
     useEffect(() => {
@@ -36,13 +54,13 @@ const CareerChatbot = () => {
 
         const userMessage = input.trim();
         setInput('');
-        
+
         // Add user message to chat
         setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-        
+
         // Show loading state
         setIsLoading(true);
-        
+
         try {
             // Make API call to your backend
             const response = await fetch("http://localhost:8000/career-chatbot", {
@@ -55,9 +73,9 @@ const CareerChatbot = () => {
                     history: messages.map(msg => ({ role: msg.role, content: msg.content }))
                 }),
             });
-            
+
             const data = await response.json();
-            
+
             if (data.error) {
                 setMessages(prev => [...prev, { role: 'bot', content: "I'm sorry, I encountered an error. Please try again later." }]);
             } else {
@@ -82,10 +100,19 @@ const CareerChatbot = () => {
         }
     };
 
+    const clearChat = () => {
+        const initialMessage = {
+            role: 'bot',
+            content: "Hello! I'm your Career Coach AI. I can help with career advice, professional development, resume tips, and job search strategies. What would you like assistance with today?"
+        };
+        setMessages([initialMessage]);
+        localStorage.setItem('chatMessages', JSON.stringify([initialMessage]));
+    };
+
     // Mock messages for initial development/demo
     const generateMockResponse = (userMessage) => {
         const lowerCaseMessage = userMessage.toLowerCase();
-        
+
         if (lowerCaseMessage.includes('resume') || lowerCaseMessage.includes('cv')) {
             return "For resume improvement, focus on quantifiable achievements rather than just listing responsibilities. Tailor your resume to each job application by matching keywords from the job description. Would you like specific tips for a particular section of your resume?";
         } else if (lowerCaseMessage.includes('interview')) {
@@ -101,8 +128,8 @@ const CareerChatbot = () => {
 
     return (
         <>
-            {/* Chat toggle button */}
-            <button 
+            {/* Single Chat toggle button */}
+            <button
                 className="chatbot-toggle"
                 onClick={toggleChat}
                 style={{
@@ -121,10 +148,10 @@ const CareerChatbot = () => {
                     justifyContent: 'center',
                     cursor: 'pointer',
                     zIndex: 999,
-                    transition: 'all 0.3s ease'
+                    transition: 'transform 0.3s ease, background-color 0.3s ease'
                 }}
             >
-                {isOpen ? <XCircle size={24} /> : <User size={24} />}
+                {isOpen ? <XCircle size={24} /> : <MessageSquare size={24} />}
             </button>
 
             {/* Chat window */}
@@ -133,7 +160,7 @@ const CareerChatbot = () => {
                     className="chatbot-window"
                     style={{
                         position: 'fixed',
-                        bottom: '100px',
+                        bottom: '90px',
                         right: '20px',
                         width: '350px',
                         height: '500px',
@@ -165,11 +192,31 @@ const CareerChatbot = () => {
                             <Bot size={20} />
                             <span>Career Coach AI</span>
                         </div>
-                        <XCircle 
-                            size={20} 
-                            onClick={toggleChat} 
-                            style={{ cursor: 'pointer' }} 
-                        />
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={clearChat}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    opacity: 0.8,
+                                    padding: '4px',
+                                    fontSize: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                }}
+                                title="Clear chat history"
+                            >
+                                Clear Chat
+                            </button>
+                            <XCircle
+                                size={20}
+                                onClick={toggleChat}
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </div>
                     </div>
 
                     {/* Messages area */}
@@ -223,7 +270,7 @@ const CareerChatbot = () => {
                                 </div>
                             </div>
                         )}
-                        
+
                         <div ref={messagesEndRef} />
                     </div>
 
@@ -284,7 +331,7 @@ const CareerChatbot = () => {
                     </form>
                 </div>
             )}
-            
+
             {/* Add styling for typing dots animation */}
             <style jsx global>{`
                 .typing-dots {
